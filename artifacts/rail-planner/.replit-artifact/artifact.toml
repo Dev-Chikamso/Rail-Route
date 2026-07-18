@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Railway Route Planner"
+version = "1.0.0"
+id = "artifacts/rail-planner"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25076
+
+[services.development]
+run = "pnpm --filter @workspace/rail-planner run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rail-planner", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/rail-planner/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25076"
+BASE_PATH = "/"

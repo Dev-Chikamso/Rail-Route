@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Nigerian Railway Route Planner API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: stations
+    description: Station operations
+  - name: routes
+    description: Route search and planning
 paths:
   /healthz:
     get:
@@ -24,6 +28,115 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /stations:
+    get:
+      operationId: listStations
+      tags: [stations]
+      summary: List all stations
+      description: Returns all available railway stations
+      responses:
+        "200":
+          description: List of stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Station"
+
+  /routes/search:
+    get:
+      operationId: searchRoutes
+      tags: [routes]
+      summary: Search train routes
+      description: Search for the fastest route between two stations
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Origin station ID or name
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Destination station ID or name
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Travel date (ISO 8601, defaults to today)
+      responses:
+        "200":
+          description: Search results with routes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RouteSearchResult"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: No routes found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /routes/alternatives:
+    get:
+      operationId: getAlternativeRoutes
+      tags: [routes]
+      summary: Get alternative routes
+      description: Returns alternative routes between two stations
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Alternative routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrainRoute"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /status:
+    get:
+      operationId: getSystemStatus
+      tags: [routes]
+      summary: Get system and API status
+      description: Returns the status of external data sources and any active disruptions
+      responses:
+        "200":
+          description: System status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStatus"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +147,141 @@ components:
       required:
         - status
 
+    Station:
+      type: object
+      required: [id, name, city, state, code]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        code:
+          type: string
+        description:
+          type: ["string", "null"]
+
+    Stop:
+      type: object
+      required: [stationId, stationName, arrivalTime, departureTime, platform]
+      properties:
+        stationId:
+          type: string
+        stationName:
+          type: string
+        arrivalTime:
+          type: ["string", "null"]
+        departureTime:
+          type: ["string", "null"]
+        platform:
+          type: ["string", "null"]
+
+    TrainRoute:
+      type: object
+      required: [id, lineName, fromStation, toStation, departureTime, arrivalTime, durationMinutes, stops, status, dataSource]
+      properties:
+        id:
+          type: string
+        lineName:
+          type: string
+        trainNumber:
+          type: ["string", "null"]
+        fromStation:
+          $ref: "#/components/schemas/Station"
+        toStation:
+          $ref: "#/components/schemas/Station"
+        departureTime:
+          type: string
+        arrivalTime:
+          type: string
+        durationMinutes:
+          type: integer
+        stops:
+          type: array
+          items:
+            $ref: "#/components/schemas/Stop"
+        status:
+          type: string
+          enum: [on-time, delayed, disrupted, cancelled]
+        delayMinutes:
+          type: integer
+        disruptions:
+          type: ["string", "null"]
+        platform:
+          type: ["string", "null"]
+        dataSource:
+          type: string
+          enum: [live, static-fallback]
+
+    RouteSearchResult:
+      type: object
+      required: [fastest, alternatives, dataSource, searchedAt]
+      properties:
+        fastest:
+          $ref: "#/components/schemas/TrainRoute"
+        alternatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrainRoute"
+        dataSource:
+          type: string
+          enum: [live, static-fallback]
+        searchedAt:
+          type: string
+
+    DataSourceStatus:
+      type: object
+      required: [name, available, lastChecked]
+      properties:
+        name:
+          type: string
+        available:
+          type: boolean
+        lastChecked:
+          type: string
+        latencyMs:
+          type: ["integer", "null"]
+
+    Disruption:
+      type: object
+      required: [id, lineName, description, severity, affectedStations]
+      properties:
+        id:
+          type: string
+        lineName:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+        affectedStations:
+          type: array
+          items:
+            type: string
+
+    SystemStatus:
+      type: object
+      required: [dataSources, activeDisruptions, overallStatus]
+      properties:
+        dataSources:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSourceStatus"
+        activeDisruptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Disruption"
+        overallStatus:
+          type: string
+          enum: [operational, degraded, outage]
+
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
