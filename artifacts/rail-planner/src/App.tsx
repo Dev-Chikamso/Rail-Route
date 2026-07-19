@@ -6,11 +6,19 @@ import { Route, Switch, Router as WouterRouter } from 'wouter';
 import SearchPage from '@/pages/SearchPage';
 import ResultsPage from '@/pages/ResultsPage';
 import StatusPage from '@/pages/StatusPage';
+import MapPage from '@/pages/MapPage';
 import NotFound from '@/pages/not-found';
+import { AIChatWidget } from '@/components/AIChatWidget';
+import { useEffect } from 'react';
 
 const queryClient = new QueryClient();
 
 function Router() {
+  // Always force light mode
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("nrc_theme");
+  }, []);
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -19,6 +27,7 @@ function Router() {
           <Route path="/" component={SearchPage} />
           <Route path="/results" component={ResultsPage} />
           <Route path="/status" component={StatusPage} />
+          <Route path="/map" component={MapPage} />
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -27,6 +36,7 @@ function Router() {
           <p>© {new Date().getFullYear()} Nigerian Railway Route Planner. Unofficial utility app.</p>
         </div>
       </footer>
+      <AIChatWidget />
     </div>
   );
 }

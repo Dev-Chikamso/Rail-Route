@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { Station } from "@workspace/api-client-react";
+import type { Station } from "@/lib/data";
 
 interface StationSelectorProps {
   stations: Station[];

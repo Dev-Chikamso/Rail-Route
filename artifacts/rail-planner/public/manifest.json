@@ -1,0 +1,12 @@
+{
+  "name": "Nigerian Railway Route Planner",
+  "short_name": "NRC Planner",
+  "description": "Plan train journeys across Nigeria with live map tracking",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#006b3c",
+  "icons": [
+    { "src": "/logo.png", "sizes": "any", "type": "image/png" }
+  ]
+}

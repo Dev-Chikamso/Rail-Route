@@ -1,20 +1,17 @@
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { format } from "date-fns";
-import { ArrowLeft, Clock, MapPin, AlertTriangle, ChevronDown, CheckCircle2 } from "lucide-react";
-import { useSearchRoutes } from "@workspace/api-client-react";
-import { getSearchRoutesQueryKey } from "@workspace/api-client-react";
+import { ArrowLeft, Clock, MapPin, AlertTriangle, ChevronDown, CheckCircle2, Map } from "lucide-react";
+import { searchRoutes } from "@/lib/data";
+import type { TrainRoute } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration, formatTime } from "@/lib/utils";
-import type { TrainRoute } from "@workspace/api-client-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
 function RouteCard({ route, isFastest = false }: { route: TrainRoute; isFastest?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -147,13 +144,12 @@ export default function ResultsPage() {
     ...(dateStr ? { date: dateStr } : {})
   };
 
-  const { data: results, isLoading, error } = useSearchRoutes(queryParams, {
-    query: {
-      enabled: !!from && !!to,
-      queryKey: getSearchRoutesQueryKey(queryParams),
-      retry: 1
-    }
-  });
+  const results = useMemo(() => {
+    if (!from || !to) return null;
+    return searchRoutes(from, to, dateStr ? new Date(dateStr) : new Date());
+  }, [from, to, dateStr]);
+  const isLoading = false;
+  const error = null;
 
   if (!from || !to) {
     return (
@@ -167,7 +163,7 @@ export default function ResultsPage() {
   const handleBack = () => setLocation("/");
 
   return (
-    <div className="min-h-[100dvh] bg-gray-50 dark:bg-background pb-20">
+    <div className="min-h-[100dvh] bg-gray-50 pb-20">
       {/* Header Banner */}
       <div className="bg-primary text-primary-foreground py-8 px-4 shadow-md sticky top-16 z-30">
         <div className="container mx-auto max-w-4xl">
@@ -213,11 +209,19 @@ export default function ResultsPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-foreground">Available Trains</h2>
-              {results.searchedAt && (
-                <span className="text-xs text-muted-foreground">
-                  Updated {formatTime(results.searchedAt)}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {results.searchedAt && (
+                  <span className="text-xs text-muted-foreground">
+                    Updated {formatTime(results.searchedAt)}
+                  </span>
+                )}
+                <Link href={`/map?from=${from}&to=${to}`}>
+                  <Button size="sm" variant="outline" className="flex items-center gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                    <Map className="w-3.5 h-3.5" />
+                    View on Map
+                  </Button>
+                </Link>
+              </div>
             </div>
             
             {results.fastest && (

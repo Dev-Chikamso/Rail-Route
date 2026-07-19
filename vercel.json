@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/rail-planner build",
+  "outputDirectory": "artifacts/rail-planner/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" }
+  ]
+}

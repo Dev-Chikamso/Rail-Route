@@ -1,4 +1,4 @@
-import { useGetSystemStatus } from "@workspace/api-client-react";
+import { SYSTEM_STATUS } from "@/lib/data";
 import { CheckCircle2, AlertTriangle, XCircle, Activity, Server, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatTime } from "@/lib/utils";
 
 export default function StatusPage() {
-  const { data: status, isLoading, error } = useGetSystemStatus();
+  const status = SYSTEM_STATUS;
+  const isLoading = false;
+  const error = null;
 
   if (isLoading) {
     return (
