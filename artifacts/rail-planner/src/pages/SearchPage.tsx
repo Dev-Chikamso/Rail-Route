@@ -80,10 +80,58 @@ export default function SearchPage() {
           </Link>
         </div>
 
+        {/* LAMATA Lines */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-2">Lagos LAMATA Rail Lines</h2>
+          <p className="text-muted-foreground text-sm mb-6">Urban rail services operated by the Lagos Metropolitan Area Transport Authority.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Blue Line */}
+            <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-blue-600 text-white px-5 py-3 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-lg">Blue Line</span>
+                  <span className="ml-2 text-blue-100 text-sm">Marina – Okokomaiko</span>
+                </div>
+                <span className="bg-white/20 text-white text-xs font-semibold px-2 py-1 rounded-full">16 Stations · 37 km</span>
+              </div>
+              <div className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  {["Marina","National Theatre","Iganmu","Alaka","Surulere","Ojuelegba","Itire","Kilo","Ijesha","Oshodi","Isolo","Ikotun","Igando","Festac","Iyana-Iba","Okokomaiko"].map((s) => (
+                    <span key={s} className="text-xs bg-blue-50 border border-blue-200 text-blue-800 px-2 py-1 rounded-full">{s}</span>
+                  ))}
+                </div>
+                <a href="/results?from=marina-blue&to=okokomaiko" className="mt-4 flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                  Search Blue Line <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            {/* Red Line */}
+            <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-red-600 text-white px-5 py-3 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-lg">Red Line</span>
+                  <span className="ml-2 text-red-100 text-sm">Agbado – Marina</span>
+                </div>
+                <span className="bg-white/20 text-white text-xs font-semibold px-2 py-1 rounded-full">8 Stations · 37 km</span>
+              </div>
+              <div className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  {["Agbado","Iju","Agege","Ikeja","Mushin","Yaba","Ebute Metta","Marina"].map((s) => (
+                    <span key={s} className="text-xs bg-red-50 border border-red-200 text-red-800 px-2 py-1 rounded-full">{s}</span>
+                  ))}
+                </div>
+                <a href="/results?from=agbado&to=marina-red" className="mt-4 flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">
+                  Search Red Line <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-6">Popular Routes</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {[["iddo", "ibadan", "Lagos", "Ibadan"], ["idu", "kaduna", "Abuja", "Kaduna"], ["warri", "iddo", "Warri", "Lagos"], ["ph-port-harcourt", "aba", "Port Harcourt", "Aba"]].map(([from, to, fl, tl]) => (
+            {[["marina-blue","okokomaiko","Marina","Okokomaiko"],["agbado","marina-red","Agbado","Marina"],["iddo","ibadan","Lagos","Ibadan"],["idu","kaduna","Abuja","Kaduna"]].map(([from, to, fl, tl]) => (
               <a key={`${from}-${to}`} href={`/results?from=${from}&to=${to}`} className="bg-card border p-4 rounded-lg flex items-center justify-between hover:border-primary transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className="font-semibold truncate">{fl}</span>
