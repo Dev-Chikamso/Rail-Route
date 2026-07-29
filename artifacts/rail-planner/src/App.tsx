@@ -7,6 +7,8 @@ import SearchPage from '@/pages/SearchPage';
 import ResultsPage from '@/pages/ResultsPage';
 import StatusPage from '@/pages/StatusPage';
 import MapPage from '@/pages/MapPage';
+import BookingPage from '@/pages/BookingPage';
+import MyTicketsPage from '@/pages/MyTicketsPage';
 import NotFound from '@/pages/not-found';
 import { AIChatWidget } from '@/components/AIChatWidget';
 import { useEffect } from 'react';
@@ -28,6 +30,8 @@ function Router() {
           <Route path="/results" component={ResultsPage} />
           <Route path="/status" component={StatusPage} />
           <Route path="/map" component={MapPage} />
+          <Route path="/book" component={BookingPage} />
+          <Route path="/tickets" component={MyTicketsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

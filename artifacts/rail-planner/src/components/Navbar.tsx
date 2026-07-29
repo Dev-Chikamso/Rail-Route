@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Train, Activity, Menu, X, Map } from "lucide-react";
+import { Train, Activity, Menu, X, Map, Ticket } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -9,6 +9,7 @@ export function Navbar() {
     { href: "/", label: "Plan Route", icon: Train },
     { href: "/status", label: "Status", icon: Activity },
     { href: "/map", label: "Live Map", icon: Map },
+    { href: "/tickets", label: "My Tickets", icon: Ticket },
   ];
 
   return (

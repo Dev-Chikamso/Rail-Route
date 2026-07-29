@@ -1,6 +1,6 @@
 import { useLocation, Link } from "wouter";
 import { format } from "date-fns";
-import { ArrowLeft, Clock, MapPin, AlertTriangle, ChevronDown, CheckCircle2, Map } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, AlertTriangle, ChevronDown, CheckCircle2, Map, Ticket } from "lucide-react";
 import { searchRoutes } from "@/lib/data";
 import type { TrainRoute } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-function RouteCard({ route, isFastest = false }: { route: TrainRoute; isFastest?: boolean }) {
+function RouteCard({ route, isFastest = false, from, to, dateStr }: { route: TrainRoute; isFastest?: boolean; from: string; to: string; dateStr: string }) {
+  const [, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   
   const isDelayed = route.status === "delayed";
@@ -87,6 +88,15 @@ function RouteCard({ route, isFastest = false }: { route: TrainRoute; isFastest?
             <div className="font-semibold mt-1">{route.toStation.name}</div>
           </div>
         </div>
+      </div>
+
+      <div className="px-6 pb-4">
+        <Button
+          className="w-full h-11 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold gap-2"
+          onClick={() => setLocation(`/book?routeId=${route.id}&from=${from}&to=${to}&date=${dateStr}`)}
+        >
+          <Ticket className="w-4 h-4" /> Book Ticket
+        </Button>
       </div>
 
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -226,13 +236,13 @@ export default function ResultsPage() {
             
             {results.fastest && (
               <div className="animate-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: '100ms' }}>
-                 <RouteCard route={results.fastest} isFastest={true} />
+                 <RouteCard route={results.fastest} isFastest={true} from={from} to={to} dateStr={dateStr ?? ''} />
               </div>
             )}
 
             {results.alternatives.map((route, i) => (
                <div key={route.id} className="animate-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: `${(i + 2) * 100}ms` }}>
-                  <RouteCard route={route} />
+                  <RouteCard route={route} from={from} to={to} dateStr={dateStr ?? ''} />
                </div>
             ))}
           </div>
