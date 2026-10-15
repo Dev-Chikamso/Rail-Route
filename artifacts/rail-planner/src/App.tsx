@@ -36,8 +36,19 @@ function Router() {
         </Switch>
       </main>
       <footer className="border-t py-6 bg-card">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Nigerian Railway Route Planner. Unofficial utility app.</p>
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground space-y-1">
+          <p>© {new Date().getFullYear()} Nigerian Railway Route Planner.</p>
+          <p>
+            Designed and developed by{" "}
+            <a
+              href="https://chikamsofolio.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary hover:underline"
+            >
+              LikeMind Circle
+            </a>
+          </p>
         </div>
       </footer>
       <AIChatWidget />

@@ -1,12 +1,14 @@
 import { STATIONS, SYSTEM_STATUS } from "@/lib/data";
 import { RouteSearchForm } from "@/components/RouteSearchForm";
 import { FavoritesHistoryPanel, useFavoritesHistory } from "@/components/FavoritesHistory";
-import { Clock, ShieldCheck, Map, ArrowRight, Radio } from "lucide-react";
+import { Clock, ShieldCheck, Map, ArrowRight, Radio, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { useGeolocation } from "@/hooks/useGeolocation";
 
 export default function SearchPage() {
   const { favorites, history, addToHistory, toggleFavorite, isFavorite, clearHistory } = useFavoritesHistory();
+  const { status: geoStatus, location } = useGeolocation();
   const isLive = false;
 
   const handleSearch = (from: string, to: string, date: string) => {
@@ -24,11 +26,17 @@ export default function SearchPage() {
           <div className="flex items-center justify-center mb-6">
             <img src="/logo.png" alt="NRC Logo" className="h-20 w-20 object-contain drop-shadow-lg" />
           </div>
-          <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
             <Badge variant="outline" className="border-primary-foreground/30 text-primary-foreground px-3 py-1 bg-black/20 backdrop-blur-sm">
               <span className={`w-2 h-2 rounded-full mr-2 ${isLive ? "bg-green-400" : "bg-amber-400 animate-pulse"}`} />
               {isLive ? "Live Data Available" : "Static Schedule"}
             </Badge>
+            {geoStatus === "granted" && location && (
+              <Badge variant="outline" className="border-primary-foreground/30 text-primary-foreground px-3 py-1 bg-black/20 backdrop-blur-sm">
+                <MapPin className="w-3 h-3 mr-1.5" />
+                {location.city ?? "Location detected"}{location.region ? `, ${location.region}` : ""}
+              </Badge>
+            )}
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
             Plan your journey across Nigeria.
