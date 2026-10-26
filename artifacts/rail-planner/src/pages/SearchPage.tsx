@@ -11,11 +11,11 @@ export default function SearchPage() {
   const { status: geoStatus, location } = useGeolocation();
   const isLive = false;
 
-  const handleSearch = (from: string, to: string, date: string) => {
+  const handleSearch = (from: string, to: string, date: string, fromUserLocation?: boolean) => {
     const fromStation = STATIONS.find((s) => s.id === from);
     const toStation = STATIONS.find((s) => s.id === to);
     if (!fromStation || !toStation) return;
-    addToHistory({ from, to, fromLabel: fromStation.name, toLabel: toStation.name, date });
+    addToHistory({ from, to, fromLabel: fromStation.name, toLabel: toStation.name, date, fromUserLocation });
   };
 
   return (

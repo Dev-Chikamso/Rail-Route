@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heart, History, Trash2, ArrowRight, Star, Clock } from "lucide-react";
+import { Heart, History, Trash2, ArrowRight, Star, Clock, MapPin, TrendingUp } from "lucide-react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ export interface JourneyEntry {
   toLabel: string;
   date: string;
   searchedAt: string;
+  fromUserLocation?: boolean;  // was origin auto-filled from GPS
+  searchCount?: number;        // how many times this route has been searched
 }
 
 const FAVORITES_KEY = "nrc_favorites";
@@ -35,17 +37,21 @@ export function useFavoritesHistory() {
     }
   });
 
-  const addToHistory = (entry: Omit<JourneyEntry, "id" | "searchedAt">) => {
+  const addToHistory = (entry: Omit<JourneyEntry, "id" | "searchedAt" | "searchCount">) => {
     const newEntry: JourneyEntry = {
       ...entry,
       id: Date.now().toString(),
       searchedAt: new Date().toISOString(),
+      searchCount: 1,
     };
     setHistory((prev) => {
-      const filtered = prev.filter(
-        (h) => !(h.from === entry.from && h.to === entry.to)
-      );
-      const updated = [newEntry, ...filtered].slice(0, 20);
+      const existing = prev.find((h) => h.from === entry.from && h.to === entry.to);
+      const filtered = prev.filter((h) => !(h.from === entry.from && h.to === entry.to));
+      const merged: JourneyEntry = {
+        ...newEntry,
+        searchCount: (existing?.searchCount ?? 0) + 1,
+      };
+      const updated = [merged, ...filtered].slice(0, 20);
       localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
       return updated;
     });
@@ -107,23 +113,32 @@ function JourneyCard({
           <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
           <span className="truncate">{entry.toLabel}</span>
         </div>
-        {showTime && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-            <Clock className="w-3 h-3" />
-            {new Date(entry.searchedAt).toLocaleDateString("en-NG", {
-              day: "numeric",
-              month: "short",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </div>
-        )}
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {entry.fromUserLocation && (
+            <span className="flex items-center gap-1 text-xs text-blue-600 font-medium">
+              <MapPin className="w-3 h-3" /> From your location
+            </span>
+          )}
+          {(entry.searchCount ?? 0) > 1 && (
+            <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
+              <TrendingUp className="w-3 h-3" /> {entry.searchCount}x searched
+            </span>
+          )}
+          {showTime && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="w-3 h-3" />
+              {new Date(entry.searchedAt).toLocaleDateString("en-NG", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          )}
+        </div>
       </div>
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onFavorite();
-        }}
+        onClick={(e) => { e.stopPropagation(); onFavorite(); }}
         className={cn(
           "shrink-0 p-1.5 rounded-lg transition-colors",
           isFav
@@ -145,6 +160,11 @@ export function FavoritesHistoryPanel({
   onToggleFavorite,
   isFavorite,
 }: FavoritesHistoryPanelProps) {
+  const frequent = [...history]
+    .filter((h) => (h.searchCount ?? 0) >= 2)
+    .sort((a, b) => (b.searchCount ?? 0) - (a.searchCount ?? 0))
+    .slice(0, 5);
+
   return (
     <div className="bg-card border border-card-border rounded-2xl shadow-sm overflow-hidden">
       <Tabs defaultValue="history">
@@ -159,9 +179,18 @@ export function FavoritesHistoryPanel({
                 </span>
               )}
             </TabsTrigger>
+            <TabsTrigger value="frequent" className="flex-1 gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Frequent
+              {frequent.length > 0 && (
+                <span className="bg-amber-100 text-amber-700 text-xs px-1.5 py-0.5 rounded-full">
+                  {frequent.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="favorites" className="flex-1 gap-2">
               <Heart className="w-4 h-4" />
-              Favorites
+              Saved
               {favorites.length > 0 && (
                 <span className="bg-secondary/20 text-secondary text-xs px-1.5 py-0.5 rounded-full">
                   {favorites.length}
@@ -196,10 +225,30 @@ export function FavoritesHistoryPanel({
                 onClick={onClearHistory}
                 className="mt-3 w-full text-muted-foreground hover:text-destructive gap-2"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                Clear History
+                <Trash2 className="w-3.5 h-3.5" /> Clear History
               </Button>
             </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="frequent" className="p-4 pt-3">
+          {frequent.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">No repeated routes yet.</p>
+              <p className="text-xs mt-1">Routes you search more than once will appear here.</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {frequent.map((entry) => (
+                <JourneyCard
+                  key={entry.id}
+                  entry={entry}
+                  onFavorite={() => onToggleFavorite(entry)}
+                  isFav={isFavorite(entry.from, entry.to)}
+                />
+              ))}
+            </div>
           )}
         </TabsContent>
 
