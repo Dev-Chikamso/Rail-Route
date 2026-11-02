@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ArrowRightLeft, Search, MapPin, Loader2 } from "lucide-react";
+import { ArrowRightLeft, Search, MapPin, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { STATIONS } from "@/lib/data";
 import { StationSelector } from "@/components/StationSelector";
 import { useGeolocation, getNearestStation } from "@/hooks/useGeolocation";
@@ -46,6 +44,18 @@ export function RouteSearchForm({ onSearch }: RouteSearchFormProps = {}) {
     setLocation(`/results?from=${from}&to=${to}&date=${dateStr}`);
   };
 
+  const today = new Date();
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const saturday = new Date(today); saturday.setDate(today.getDate() + ((6 - today.getDay() + 7) % 7 || 7));
+
+  const quickDates = [
+    { label: "Today", date: today },
+    { label: "Tomorrow", date: tomorrow },
+    { label: "Weekend", date: saturday },
+  ];
+
+  const dateStr = format(date, "yyyy-MM-dd");
+  const todayStr = format(today, "yyyy-MM-dd");
   const nearestStation = location ? getNearestStation(location.lat, location.lng) : null;
 
   return (
@@ -57,13 +67,8 @@ export function RouteSearchForm({ onSearch }: RouteSearchFormProps = {}) {
 
       {/* Location auto-fill notice */}
       {geoStatus === "idle" && (
-        <button
-          type="button"
-          onClick={requestGeo}
-          className="w-full mb-4 flex items-center gap-2 text-xs text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-lg px-3 py-2 transition-colors"
-        >
-          <MapPin className="w-3.5 h-3.5 shrink-0" />
-          Use my current location as origin
+        <button type="button" onClick={requestGeo} className="w-full mb-4 flex items-center gap-2 text-xs text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-lg px-3 py-2 transition-colors">
+          <MapPin className="w-3.5 h-3.5 shrink-0" /> Use my current location as origin
         </button>
       )}
       {geoStatus === "requesting" && (
@@ -79,7 +84,8 @@ export function RouteSearchForm({ onSearch }: RouteSearchFormProps = {}) {
         </div>
       )}
 
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-end mb-3">
+      {/* Station row */}
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-end mb-4">
         <div className="min-w-0">
           <label className="block text-xs font-semibold mb-1.5 text-muted-foreground uppercase tracking-wider">From</label>
           <StationSelector stations={STATIONS} value={from} onChange={handleFromChange} placeholder="Origin Station" />
@@ -95,23 +101,52 @@ export function RouteSearchForm({ onSearch }: RouteSearchFormProps = {}) {
         </div>
       </div>
 
-      <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
-        <div className="min-w-0">
-          <label className="block text-xs font-semibold mb-1.5 text-muted-foreground uppercase tracking-wider">Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-full h-12 justify-start text-left font-normal bg-background", !date && "text-muted-foreground")}>
-                <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="truncate">{date ? format(date, "MMM d, yyyy") : "Pick a date"}</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))} />
-            </PopoverContent>
-          </Popover>
+      {/* Date row */}
+      <div className="mb-4">
+        <label className="block text-xs font-semibold mb-1.5 text-muted-foreground uppercase tracking-wider">Date</label>
+        <div className="flex items-center gap-2 flex-wrap">
+          {quickDates.map(({ label, date: qd }) => {
+            const qStr = format(qd, "yyyy-MM-dd");
+            const isSelected = dateStr === qStr;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setDate(qd)}
+                className={cn(
+                  "h-10 px-4 rounded-lg border text-sm font-medium transition-all shrink-0",
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-background text-foreground border-border hover:border-primary/60 hover:bg-primary/5"
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+
+          {/* Native date input */}
+          <input
+            type="date"
+            value={dateStr}
+            min={todayStr}
+            onChange={(e) => e.target.value && setDate(new Date(e.target.value + "T00:00:00"))}
+            className={cn(
+              "h-10 flex-1 min-w-[150px] rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground cursor-pointer transition-colors",
+              "hover:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary",
+              !quickDates.some(({ date: qd }) => format(qd, "yyyy-MM-dd") === dateStr) && "border-primary text-primary"
+            )}
+          />
         </div>
-        <Button type="submit" size="lg" className="h-12 px-6 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-md whitespace-nowrap shrink-0" disabled={!from || !to}>
-          <Search className="w-4 h-4 mr-2 shrink-0" />Search
+      </div>
+
+      {/* Footer row */}
+      <div className="flex items-center justify-between gap-3 pt-3 border-t">
+        <p className="text-sm text-muted-foreground">
+          Travelling on <span className="font-semibold text-foreground">{format(date, "EEEE, MMMM d, yyyy")}</span>
+        </p>
+        <Button type="submit" size="lg" className="h-11 px-8 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold shadow-md whitespace-nowrap shrink-0" disabled={!from || !to}>
+          <Search className="w-4 h-4 mr-2 shrink-0" /> Search
         </Button>
       </div>
     </form>
