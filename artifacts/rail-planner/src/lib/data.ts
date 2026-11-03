@@ -222,6 +222,9 @@ export function searchRoutes(fromQuery: string, toQuery: string, date: Date): Se
   return { fastest, alternatives, dataSource: "static-fallback", searchedAt: new Date().toISOString() };
 }
 
+// Exported for TripPage / LiveStatusPage
+export const TIMETABLE_EXPORT = TIMETABLE;
+
 export const SYSTEM_STATUS = {
   overallStatus: "operational" as const,
   dataSources: [

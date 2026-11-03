@@ -7,6 +7,8 @@ import SearchPage from '@/pages/SearchPage';
 import ResultsPage from '@/pages/ResultsPage';
 import StatusPage from '@/pages/StatusPage';
 import MapPage from '@/pages/MapPage';
+import TripPage from '@/pages/TripPage';
+import LiveStatusPage from '@/pages/LiveStatusPage';
 import BookingPage from '@/pages/BookingPage';
 import MyTicketsPage from '@/pages/MyTicketsPage';
 import NotFound from '@/pages/not-found';
@@ -30,6 +32,8 @@ function Router() {
           <Route path="/results" component={ResultsPage} />
           <Route path="/status" component={StatusPage} />
           <Route path="/map" component={MapPage} />
+          <Route path="/trip" component={TripPage} />
+          <Route path="/live-status" component={LiveStatusPage} />
           <Route path="/book" component={BookingPage} />
           <Route path="/tickets" component={MyTicketsPage} />
           <Route component={NotFound} />
